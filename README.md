@@ -1,6 +1,7 @@
 Running on Python 3.11.9 on Ubuntu 22.04
 
 ## Python Setup
+### Installing Python 3.11.9
 ```
 sudo apt update
 sudo apt upgrade
@@ -16,3 +17,4 @@ sudo make altinstall
 * Then create a VSC virtual environment with Ctrl + Shift + P -> Python: Create Environment
 * Select Python 3.11.9
 * Install requirements via requirements.txt
+    * ``pip install -r requirements.txt``
