@@ -53,7 +53,7 @@ class FrozenLakeDQL():
     ACTIONS = ['L','D','R','U']     # for printing 0,1,2,3 => L(eft),D(own),R(ight),U(p)
 
     # Train the FrozeLake environment
-    def train(self, episodes, render=False, is_slippery=True):
+    def train(self, episodes, render=False, is_slippery=False):
         # Create FrozenLake instance
         env = gym.make('FrozenLake-v1', map_name="4x4", is_slippery=is_slippery, render_mode='human' if render else None)
         num_states = env.observation_space.n
@@ -146,10 +146,12 @@ class FrozenLakeDQL():
             sum_rewards[x] = np.sum(rewards_per_episode[max(0, x-100):(x+1)])
         plt.subplot(121) # plot on a 1 row x 2 col grid, at cell 1
         plt.plot(sum_rewards)
+        plt.title('Average rewards (100 episodes)')
         
         # Plot epsilon decay (Y-axis) vs episodes (X-axis)
         plt.subplot(122) # plot on a 1 row x 2 col grid, at cell 2
         plt.plot(epsilon_history)
+        plt.title('Epsilon decay')
         
         # Save plots
         plt.savefig('frozen_lake_dql.png')
@@ -262,6 +264,6 @@ class FrozenLakeDQL():
 if __name__ == '__main__':
 
     frozen_lake = FrozenLakeDQL()
-    is_slippery = False
+    is_slippery = True
     frozen_lake.train(1000, is_slippery=is_slippery)
     frozen_lake.test(10, is_slippery=is_slippery)
