@@ -146,7 +146,7 @@ class FrozenLakeDQL():
             sum_rewards[x] = np.sum(rewards_per_episode[max(0, x-100):(x+1)])
         plt.subplot(121) # plot on a 1 row x 2 col grid, at cell 1
         plt.plot(sum_rewards)
-        plt.title('Average rewards (100 episodes)')
+        plt.title('Average rewards')
         
         # Plot epsilon decay (Y-axis) vs episodes (X-axis)
         plt.subplot(122) # plot on a 1 row x 2 col grid, at cell 2
