@@ -1,7 +1,7 @@
-Running on Python 3.11.9 on Ubuntu 22.04
+Running on Python 3.11.9
 
 ## Python Setup
-### Installing Python 3.11.9
+### Installing Python 3.11.9 on Ubuntu 22.04
 ```
 sudo apt update
 sudo apt upgrade
@@ -13,8 +13,20 @@ cd Python-3.11.9
 make -j$(nproc)
 sudo make altinstall
 ```
+### On Windows/Mac
+Download from https://www.python.org/downloads/release/python-3119/
 
-* Then create a VSC virtual environment with Ctrl + Shift + P -> Python: Create Environment
+## Virtual Environment
+### Option 1: VSC builtin
+* Create a VSC virtual environment with Ctrl + Shift + P -> Python: Create Environment
 * Select Python 3.11.9
+### Option 2: Run the following commands
+* Create the virtual environment: ``python -m venv .venv``
+* Activate the virtual environment
+    * On Windows: ``.\myenv\Scripts\activate``
+    * On Mac: ``source myenv/bin/activate``
+
+## Install requirements
 * Install requirements via requirements.txt
     * ``pip install -r requirements.txt``
+    * NOTE: You may need to manually install some libraries that cause errors during installation.
