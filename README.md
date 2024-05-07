@@ -1,4 +1,4 @@
-# Proximal Policy Optimization Research Reimplementation
+# PPO Research Reimplementation
 Running on Python 3.11.9
 
 ## Clone project
