@@ -1,5 +1,4 @@
 # PPO Research Reimplementation
-Running on Python 3.11.9
 
 ## Clone project
 ```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
