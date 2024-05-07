@@ -1,7 +1,11 @@
+# Proximal Policy Optimization Research Reimplementation
 Running on Python 3.11.9
 
-## Python Setup
-### Installing Python 3.11.9 on Ubuntu 22.04
+## Clone project
+```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
+
+## Installing Python 3.11.9
+### On Ubuntu 22.04
 ```
 sudo apt update
 sudo apt upgrade
