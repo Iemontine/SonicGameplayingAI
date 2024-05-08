@@ -8,6 +8,10 @@ import random
 import torch
 from torch import nn
 import torch.nn.functional as F
+import os
+
+MODEL_PATH = os.path.join('models', 'frozen_lake_dql.pt')
+PERFORMANCE_PLOT_PATH = os.path.join('performance', 'frozen_lake_dql.png')
 
 # Define model
 class DQN(nn.Module):
@@ -135,7 +139,7 @@ class FrozenLakeDQL():
         env.close()
 
         # Save policy
-        torch.save(policy_dqn.state_dict(), "frozen_lake_dql.pt")
+        torch.save(policy_dqn.state_dict(), MODEL_PATH)
 
         # Create new graph 
         plt.figure(1)
@@ -154,7 +158,7 @@ class FrozenLakeDQL():
         plt.title('Epsilon decay')
         
         # Save plots
-        plt.savefig('frozen_lake_dql.png')
+        plt.savefig(PERFORMANCE_PLOT_PATH)
 
     # Optimize policy network
     def optimize(self, mini_batch, policy_dqn, target_dqn):
@@ -217,7 +221,7 @@ class FrozenLakeDQL():
 
         # Load learned policy
         policy_dqn = DQN(in_states=num_states, h1_nodes=num_states, out_actions=num_actions) 
-        policy_dqn.load_state_dict(torch.load("frozen_lake_dql.pt"))
+        policy_dqn.load_state_dict(torch.load(MODEL_PATH))
         policy_dqn.eval()    # switch model to evaluation mode
 
         print('Policy (trained):')
@@ -264,6 +268,6 @@ class FrozenLakeDQL():
 if __name__ == '__main__':
 
     frozen_lake = FrozenLakeDQL()
-    is_slippery = True
-    frozen_lake.train(1000, is_slippery=is_slippery)
+    is_slippery = False
+    # frozen_lake.train(1000, is_slippery=is_slippery)
     frozen_lake.test(10, is_slippery=is_slippery)

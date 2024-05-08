@@ -31,7 +31,7 @@
     - use a ratio that indicates the difference between out current and old policy is not too big
     - clip this ration between [1 - epsilon, 1 + epsilon]
 
-# The Inutuition
+# The Intuition
 
     - to limit policy changes, which imporoves training stability
     - in other words we want avoid having too large of a policy update
