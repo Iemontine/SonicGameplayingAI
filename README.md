@@ -36,8 +36,7 @@ Download from https://www.python.org/downloads/release/python-3119/
     * ``pip install -r requirements.txt``
     * NOTE: You may need to manually install some libraries that cause errors during installation.
 
-# PPO
-## Proximal Policy Optimization (PPO)
+# Proximal Policy Optimization Overview
     - rl algo using a on-policy method
     - on-policy method means the algo learns a policy to make decsions in the environment
 ## How it works at a high level
