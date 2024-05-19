@@ -1,5 +1,14 @@
-gymnasium[accept-rom-license]
---index-url https://download.pytorch.org/whl/cu121
+gymnasium==0.29.1
+# pip install gymnasium[accept-rom-license]
+stable-retro==0.9.2
+opencv-python==4.9.0.80
+stable_baselines3==2.3.2
+# pip install stable-baselines3[extra
+pygame==2.5.2
+
+# python3 -m retro.import ./ROM
+
+--extra-index-url https://download.pytorch.org/whl/cu121
 torch==2.3.0+cu121
 torchaudio==2.3.0+cu121
 torchvision==0.18.0+cu121
