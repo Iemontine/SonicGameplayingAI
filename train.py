@@ -107,6 +107,7 @@ def main():
 		"steps": 64,				# Steps before updating policy
 		"batch_size": 64,
 		"clip_ratio": 0.2,
+		"policy": "MlpPolicy",
 		"render": True,
 	}
 	# model = PPO(Convolutional, num_states=envs.num_states, num_actions=len(ACTION_MAPPING), params=params)
@@ -124,13 +125,13 @@ def main():
 			gamma=params["gamma"], 
 			gae_lambda=params["tau"], 
 			ent_coef=params["beta"], 
-			policy="MlpPolicy", 
 			learning_rate=params["lr"], 
 			n_steps=params["steps"], 
 			batch_size=params["batch_size"], 
 			n_epochs=params["epochs"], 
 			clip_range=params["clip_ratio"],
 			env=env, 
+			policy=params["policy"], 
 			device= torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 		# Track losses
 		losses = []
