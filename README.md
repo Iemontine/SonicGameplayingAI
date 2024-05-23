@@ -1,13 +1,12 @@
 # PPO Research Reimplementation
 
 ## Clone project
-'''git clone https://github.com/Iemontine/ProximalPolicyOptimization.git'''
+```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
 
 <details>
     <summary><h2>Installing Python 3.10.9</h2></summary>
     <h3>On Ubuntu 22.04</h3>
-
-    '''bash
+    
     sudo apt update
     sudo apt upgrade
     sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
@@ -17,7 +16,6 @@
     ./configure --enable-optimizations
     make -j$(nproc)
     sudo make altinstall
-    '''
 
     <h3>On Windows/Mac</h3>
     * Download from https://www.python.org/downloads/release/python-3109/
