@@ -6,7 +6,7 @@
 <details>
 	<summary><h2>Installing Python 3.10.9</h2></summary>
 	<h3>On Ubuntu 22.04</h3>
-	```
+	```javascript
 		sudo apt update
 		sudo apt upgrade
 		sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
