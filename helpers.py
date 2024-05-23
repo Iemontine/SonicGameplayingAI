@@ -13,6 +13,17 @@ from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.env_checker import check_env 
+from stable_baselines3.common.monitor import Monitor
+
+# Creates the environment
+def make_env():
+	env = retro.make('SonicTheHedgehog-Genesis')
+	env = Monitor(env)
+	env = RewardWrapper(env)
+	env = FramePreprocessingWrapper(env)
+	env = FrameSkipper(env, skip=4)
+	env = ActionMappingWrapper(env, ACTION_MAPPING)
+	return env
 
 class ActionMappingWrapper(gym.ActionWrapper):
 	def __init__(self, env, action_mapping):
@@ -89,12 +100,3 @@ class Callback(BaseCallback):
 		elif 'rewards' in self.locals and np.any(self.locals['rewards'] < 0):
 			print(f"Loss on {self.num_timesteps}: {self.locals['rewards']}")
 		return True
-
-# Multiprocessing
-def make_env():
-	env = retro.make('SonicTheHedgehog-Genesis')
-	env = RewardWrapper(env)
-	env = FramePreprocessingWrapper(env)
-	env = FrameSkipper(env, skip=4)
-	env = ActionMappingWrapper(env, ACTION_MAPPING)
-	return env

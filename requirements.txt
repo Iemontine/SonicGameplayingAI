@@ -1,12 +1,9 @@
 gymnasium==0.29.1
-# pip install gymnasium[accept-rom-license]
 stable-retro==0.9.2
 opencv-python==4.9.0.80
 stable_baselines3==2.3.2
-# pip install stable-baselines3[extra]
 pygame==2.5.2
-
-# python3 -m retro.import ./ROM
+optuna==3.6.1
 
 # ensure you have CUDA 12.1 on your machine. manually install torch, torchaudio, and torchvision if you do not have an NVIDIA GPU/do not use Google Colab.
 # Certain CSIF computers have NVIDIA GPUs, so connecting to them is an alternate option.
