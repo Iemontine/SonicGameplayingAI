@@ -4,7 +4,7 @@
 ```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
 
 <details>
-<summary><h2>Installing Python 3.10.9</h2></summary>
+	<summary><h2>Installing Python 3.10.9</h2></summary>
 	<h3>On Ubuntu 22.04</h3>
 	```
 		sudo apt update
