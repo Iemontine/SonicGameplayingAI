@@ -6,7 +6,7 @@
 <details>
 <summary><h2>Installing Python 3.10.9</h2></summary>
 
-* ### On Ubuntu 22.04
+* #### On Ubuntu 22.04
     *
         ```bash
         sudo apt update
@@ -19,17 +19,17 @@
         make -j$(nproc)
         sudo make altinstall
         ```
-* ### On Windows/Mac
+* #### On Windows/Mac
     * Download from https://www.python.org/downloads/release/python-3109/</li></ul></ul>
     </details>
 
 <details>
 <summary><h2>Setting up Virtual Environment</h2></summary>
 
-* ### Option 1: VSC builtin
+* #### Option 1: VSC builtin
     * Create a VSC virtual environment with Ctrl + Shift + P -> Python: Create Environment
     * Select Python 3.10.9
-* ### Option 2: Run the following commands
+* #### Option 2: Run the following commands
     * Create the virtual environment: ```python -m venv .venv```
     * Activate the virtual environment
         * On Windows: ```.\myenv\Scripts\activate```
@@ -39,10 +39,10 @@
 <details>
 <summary><h2>Install requirements</h2></summary>
 
-* Install requirements via requirements.txt
+* #### Install requirements via requirements.txt
     * ```pip install -r requirements.txt```
     * NOTE: You may need to manually install some libraries that cause errors during installation.
-* Additional requirements
+* #### Additional requirements
     ```bash
     pip install gymnasium[accept-rom-license]
     pip install stable-baselines3[extra]
