@@ -4,31 +4,31 @@
 ```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
 
 <details>
-<summary>## Installing Python 3.10.9</summary>
-### On Ubuntu 22.04
-```
-sudo apt update
-sudo apt upgrade
-sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
-wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz
-tar -xf Python-3.10.9.tgz
-cd Python-3.10.9
-./configure --enable-optimizations
-make -j$(nproc)
-sudo make altinstall
-```
-### On Windows/Mac
-Download from https://www.python.org/downloads/release/python-3109/
-
-## Virtual Environment
-### Option 1: VSC builtin
-* Create a VSC virtual environment with Ctrl + Shift + P -> Python: Create Environment
-* Select Python 3.10.9
-### Option 2: Run the following commands
-* Create the virtual environment: ``python -m venv .venv``
-* Activate the virtual environment
-	* On Windows: ``.\myenv\Scripts\activate``
-	* On Mac: ``source myenv/bin/activate``
+<summary>Installing Python 3.10.9</summary>
+	### On Ubuntu 22.04
+	```
+	sudo apt update
+	sudo apt upgrade
+	sudo apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev
+	wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz
+	tar -xf Python-3.10.9.tgz
+	cd Python-3.10.9
+	./configure --enable-optimizations
+	make -j$(nproc)
+	sudo make altinstall
+	```
+	### On Windows/Mac
+	Download from https://www.python.org/downloads/release/python-3109/
+	
+	## Virtual Environment
+	### Option 1: VSC builtin
+	* Create a VSC virtual environment with Ctrl + Shift + P -> Python: Create Environment
+	* Select Python 3.10.9
+	### Option 2: Run the following commands
+	* Create the virtual environment: ``python -m venv .venv``
+	* Activate the virtual environment
+		* On Windows: ``.\myenv\Scripts\activate``
+		* On Mac: ``source myenv/bin/activate``
 </details>
 
 ## Install requirements
