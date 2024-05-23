@@ -1,3 +1,14 @@
+import gymnasium as gym	# useful if using a wrapper for retro environments
+import cv2				# monitor wrapper
+import retro			# stable-retro
+import numpy as np
+ACTION_MAPPING = {
+	0: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+	1: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+	2: [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+	3: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+}
+
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback

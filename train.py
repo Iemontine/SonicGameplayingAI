@@ -1,9 +1,6 @@
 import os
 import torch
-import gymnasium as gym	# useful if using a wrapper for retro environments
-import retro
 import numpy as np
-import cv2
 import matplotlib.pyplot as plt
 import optuna
 
@@ -15,13 +12,7 @@ from ppo import PPO
 from helpers import Callback, make_env
 
 print(f"PyTorch Version: {torch.__version__}, CUDA Version: {torch.version.cuda}, CUDA Enabled: {torch.cuda.is_available()}")
-	
-ACTION_MAPPING = {
-	0: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-	1: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-	2: [0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-	3: [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
-}
+
 
 def objective(trial):
 	gamma = trial.suggest_float('gamma', 0.9, 0.999)						# Discount factor
@@ -43,11 +34,19 @@ def objective(trial):
 		"steps": n_steps,
 		"batch_size": batch_size,
 		"clip_ratio": clip_ratio,
+		# basically constant
 		"policy": "CnnPolicy",
 		"render": True,
+		"multiprocessing": True,
+		"device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 	}
 	num_envs = 10
-	env = SubprocVecEnv([make_env for _ in range(num_envs)])
+	if params["multiprocessing"]:
+		env = SubprocVecEnv([make_env for _ in range(num_envs)])
+	else:
+		env = make_env()
+	
+	# Create model
 	model = PPO(
 		gamma=params["gamma"],
 		gae_lambda=params["tau"],
@@ -59,67 +58,77 @@ def objective(trial):
 		clip_range=params["clip_ratio"],
 		env=env,
 		policy=params["policy"],
-		device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+		device=params["device"]
 	)
 	model.learn(total_timesteps=params["total_timesteps"], callback=Callback())
 	mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10, return_episode_rewards=True)
 	return np.mean(mean_reward)
 
-def main():
-	params = {
-		"gamma": 0.75,				
-		"tau": 0.95,				
-		"beta": 0.33,				
-		"epsilon": 0.45,			
-		"lr": 0.003,				
-		"epochs": 10,
-		"total_timesteps": 100_000_0,
-		"steps": 512,				
-		"batch_size": 1024,
-		"clip_ratio": 0.75,
-		"policy": "CnnPolicy",
-		"render": True,
-	}
-	if not os.path.exists("sonic.zip"):
-		losses = []
+study = optuna.create_study(direction='maximize')
+study.optimize(objective, n_trials=100)
 
-		# model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback())
-		# Create vectorized environments
-		num_envs = 10
-		env = SubprocVecEnv([make_env() for _ in range(num_envs)])
-		model = PPO(
-			gamma=params["gamma"], 
-			gae_lambda=params["tau"], 
-			ent_coef=params["beta"], 
-			learning_rate=params["lr"], 
-			n_steps=params["steps"], 
-			batch_size=params["batch_size"], 
-			n_epochs=params["epochs"], 
-			clip_range=params["clip_ratio"],
-			env=env, 
-			policy=params["policy"], 
-			device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
-		)
-		model = PPO(params["policy"], env, verbose=1)
-		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback())
+print("Best trial:")
+trial = study.best_trial
+print(f"Value: {trial.value}")
+print("Params: ")
+for key, value in trial.params.items():
+	print(f"{key}: {value}")
 
-		plt.plot(losses)
-		plt.xlabel('Steps')
-		plt.ylabel('Loss')
-		plt.title('Loss vs Timesteps')
-		plt.savefig('loss_vs_timesteps.png')
-		model.save("sonic")
+# def main():
+# 	params = {
+# 		"gamma": 0.75,				
+# 		"tau": 0.95,				
+# 		"beta": 0.33,				
+# 		"epsilon": 0.45,			
+# 		"lr": 0.003,				
+# 		"epochs": 10,
+# 		"total_timesteps": 100_000_0,
+# 		"steps": 512,				
+# 		"batch_size": 1024,
+# 		"clip_ratio": 0.75,
+# 		"policy": "CnnPolicy",
+# 		"render": True,
+# 	}
+# 	if not os.path.exists("sonic.zip"):
+# 		losses = []
 
-	env = make_env()
-	model = PPO.load("sonic", env=env)
-	vec_env = model.get_env()
-	obs = vec_env.reset()
-	done = False
-	while not done:
-		action, states = model.predict(obs, deterministic=True)
-		obs, reward, done, info = vec_env.step(action)
-		vec_env.render()
-	env.close()
+# 		# model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback())
+# 		# Create vectorized environments
+# 		num_envs = 10
+# 		env = SubprocVecEnv([make_env() for _ in range(num_envs)])
+# 		model = PPO(
+# 			gamma=params["gamma"], 
+# 			gae_lambda=params["tau"], 
+# 			ent_coef=params["beta"], 
+# 			learning_rate=params["lr"], 
+# 			n_steps=params["steps"], 
+# 			batch_size=params["batch_size"], 
+# 			n_epochs=params["epochs"], 
+# 			clip_range=params["clip_ratio"],
+# 			env=env, 
+# 			policy=params["policy"], 
+# 			device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# 		)
+# 		model = PPO(params["policy"], env, verbose=1)
+# 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback())
 
-if __name__ == "__main__":
-	main()
+# 		plt.plot(losses)
+# 		plt.xlabel('Steps')
+# 		plt.ylabel('Loss')
+# 		plt.title('Loss vs Timesteps')
+# 		plt.savefig('loss_vs_timesteps.png')
+# 		model.save("sonic")
+
+# 	env = make_env()
+# 	model = PPO.load("sonic", env=env)
+# 	vec_env = model.get_env()
+# 	obs = vec_env.reset()
+# 	done = False
+# 	while not done:
+# 		action, states = model.predict(obs, deterministic=True)
+# 		obs, reward, done, info = vec_env.step(action)
+# 		vec_env.render()
+# 	env.close()
+
+# if __name__ == "__main__":
+# 	main()
