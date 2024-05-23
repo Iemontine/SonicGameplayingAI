@@ -3,10 +3,9 @@
 ## Clone project
 ```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
 
-## Installing Python 3.10.9
 <details>
 
-<summary>click to expand</summary>
+<summary><h2>Installing Python 3.10.9</h2></summary>
 
 ### On Ubuntu 22.04
 *
