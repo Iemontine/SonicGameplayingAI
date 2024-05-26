@@ -32,8 +32,8 @@
 * #### Option 2: Run the following commands
     * Create the virtual environment: ```python -m venv .venv```
     * Activate the virtual environment
-        * On Windows: ```.\myenv\Scripts\activate```
-        * On Mac: ```source myenv/bin/activate```
+        * On Windows: ```.\.venv\Scripts\activate```
+        * On Mac: ```source .venv/bin/activate```
 </details>
 
 <details>

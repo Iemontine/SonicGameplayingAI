@@ -35,7 +35,7 @@ def objective(trial):
 		"batch_size": batch_size,		# Minibatch size
 		"epochs": epochs,				# Number of epoch when optimizing the surrogate loss
 		# Development constants
-		"total_timesteps": 400000,
+		"total_timesteps": 1000,
 		"policy": "CnnPolicy",
 		"num_envs": 10,
 		"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
@@ -64,13 +64,14 @@ def objective(trial):
 	)
 
 	# Train model
-	model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback())
-	mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10, return_episode_rewards=True)
+	model.learn(total_timesteps=params["total_timesteps"], progress_bar=True)
+	mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=1, deterministic=False)
+	print("Mean reward:", mean_reward)
 	return np.mean(mean_reward)
 
 def main():
 	study = optuna.create_study(direction='maximize')
-	study.optimize(objective, n_trials=50)
+	study.optimize(objective, n_trials=1)
 
 	print("Best trial:")
 	trial = study.best_trial
