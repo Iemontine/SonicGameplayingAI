@@ -2,6 +2,8 @@ import gymnasium as gym	# useful if using a wrapper for retro environments
 import cv2				# monitor wrapper
 import retro			# stable-retro
 import numpy as np
+
+# TODO: other implementations show that action space may need to increased for the more complex levels (after 1-2)
 ACTION_MAPPING = {
 	0: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
 	1: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
@@ -41,11 +43,19 @@ class Rewarder(gym.Wrapper):
 		if info["lives"] < 3:
 			return obs, -1, True, False, info
 		if self.cur_act != info["act"]:	# restart model on level change
+			# TODO: investigate what happens with below code snippet, in which progress is reset when level changes
+			# could result in learning to go FASTER once the solution to a level is found
+			self.env.reset()
+			_, _, _, _, info = self.env.step(self.env.action_space.sample())
+			self.start_pos = info["x"]
+			self.cur_act = info["act"]
+			self.progress = self.start_pos
+			self.env.reset()
 			return obs, 100, True, False, info
 		# TODO: multiply reward by delta x?
 		return obs, reward / 100, terminated, truncated, info
 	
-	# potentially unused. investigating issues with resetting environment after epoch update
+	# TODO: commented below code to investigate issues with resetting environment after epoch update (local minima being preferred, sonics stopped trying to move, although this could also be the result of a relatively high punishment (-10) for dying in combination with a relatively low reward (reward/1000) for moving forward), see below "commented out because resetting early was preventing thorough exploration of the loop problem"
 	# def reset(self, **kwargs):
 	# 	self.env.reset()
 	# 	_, _, _, _, info = self.env.step(self.env.action_space.sample())
@@ -109,7 +119,7 @@ class Callback(BaseCallback):
 				print(f"Loss on {self.num_timesteps}: {self.locals['rewards']}")
 
 		if self.n_steps > 0 and self.num_timesteps % self.n_steps == 0:
-			# self.model.env.reset()
+			# self.model.env.reset() # commented out because resetting early was preventing thorough exploration of the loop problem
 			if self.verbose > 0:
 				print(f"Policy updated on {self.num_timesteps}, saving model...")
 				# TODO: save model for iterative comparisons between models

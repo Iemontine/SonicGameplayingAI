@@ -58,6 +58,7 @@ def main():
 	model = PPO(params["policy"], env, verbose=1)
 	model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 
+	# TODO: actually get this working (use callback to get loss/reward values, graph average across all envs)
 	# plt.plot(losses)
 	# plt.xlabel('Steps')
 	# plt.ylabel('Loss')
