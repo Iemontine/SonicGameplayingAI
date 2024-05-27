@@ -45,24 +45,25 @@ class Rewarder(gym.Wrapper):
 		if self.cur_act != info["act"]:	# restart model on level change
 			# TODO: investigate what happens with below code snippet, in which progress is reset when level changes
 			# could result in learning to go FASTER once the solution to a level is found
-			self.env.reset()
-			_, _, _, _, info = self.env.step(self.env.action_space.sample())
-			self.start_pos = info["x"]
-			self.cur_act = info["act"]
-			self.progress = self.start_pos
-			self.env.reset()
+			# self.env.reset()
+			# _, _, _, _, info = self.env.step(self.env.action_space.sample())
+			# self.start_pos = info["x"]
+			# self.cur_act = info["act"]
+			# self.progress = self.start_pos
+			# self.env.reset()
+			# leave alone
 			return obs, 100, True, False, info
 		# TODO: multiply reward by delta x?
 		return obs, reward / 100, terminated, truncated, info
 	
 	# TODO: commented below code to investigate issues with resetting environment after epoch update (local minima being preferred, sonics stopped trying to move, although this could also be the result of a relatively high punishment (-10) for dying in combination with a relatively low reward (reward/1000) for moving forward), see below "commented out because resetting early was preventing thorough exploration of the loop problem"
-	# def reset(self, **kwargs):
-	# 	self.env.reset()
-	# 	_, _, _, _, info = self.env.step(self.env.action_space.sample())
-	# 	self.start_pos = info["x"]
-	# 	self.cur_act = info["act"]
-	# 	self.progress = self.start_pos
-	# 	return self.env.reset(**kwargs)
+	def reset(self, **kwargs):
+		self.env.reset()
+		_, _, _, _, info = self.env.step(self.env.action_space.sample())
+		self.start_pos = info["x"]
+		self.cur_act = info["act"]
+		self.progress = self.start_pos
+		return self.env.reset(**kwargs)
 
 class Observer(gym.ObservationWrapper):
 	def __init__(self, env):
