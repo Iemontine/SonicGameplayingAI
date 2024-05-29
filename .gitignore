@@ -3,3 +3,4 @@ old
 ROM
 *pycache*
 *.zip
+logs/

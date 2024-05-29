@@ -10,7 +10,8 @@ def main():
 
 	while not done:
 		action, states = model.predict(obs)
-		obs, reward, done, info = vec_env.step(action)
+		obs, reward, _, info = vec_env.step(action)
+		done = info[0]['act'] == 1
 		vec_env.render()
 	env.close()
 
