@@ -2,8 +2,9 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-# TODO: get rid of these eventually
-from stable_baselines3.common.vec_env import SubprocVecEnv, VecFrameStack
+# TODO: get rid of these eventually?
+from stable_baselines3.common.vec_env import SubprocVecEnv, VecFrameStack, VecNormalize
+from stable_baselines3.common.results_plotter import load_results, ts2xy, plot_results
 from stable_baselines3.common.evaluation import evaluate_policy
 
 from ppo import PPO
@@ -16,28 +17,32 @@ def main():
 		# Currently arbitrarily chosen values
 		"gamma": 0.95,					# Discount factor
 		"tau": 0.985,					# Factor for trade-off of bias vs variance in GAE
-		"beta": 0.33,					# Entropy coefficient
+		"beta": 0.30,					# Entropy coefficient
 		"epsilon": 0.75,				# Clipped surrogate objective
 		"lr": 7.5e-4,					# Learning rate
 		"steps": 4096,					# Steps before updating policy
 		"batch_size": 8,				# Minibatch size
 		"epochs": 10,					# Number of epoch when optimizing the surrogate loss
 		# Development constants
-		"total_timesteps": 1500000,
+		"total_timesteps": 2000000,
 		"policy": "CnnPolicy",
-		"num_envs": 6,
+		"num_envs": 5,
+		"frame_skip": 8,
+		"frame_stack": 8,
+		"observation_dimension": (96, 96),
 		"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 		"multiprocessing": True,
 		"render": True,
+		"level": "1-1"
 	}
 
 	# losses = []
 
 	if params["multiprocessing"]:
-		env = SubprocVecEnv([make_env for _ in range(params["num_envs"])])
+		env = SubprocVecEnv([make_env(params["level"], skip=params["frame_skip"], obs_dim=params["observation_dimension"]) for _ in range(params["num_envs"])])
 	else:
-		env = make_env()
-	env = VecFrameStack(env, n_stack=4)
+		env = make_env(params["level"], skip=params["frame_skip"], obs_dim=params["observation_dimension"])()
+	env = VecFrameStack(env, n_stack=params["frame_stack"])
 
 	# Create model
 	model = PPO(
@@ -58,6 +63,10 @@ def main():
 	model = PPO(params["policy"], env, verbose=1)
 	model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 
+	# Plot results
+	# plot_results([load_results("logs/")], params["total_timesteps"], "PPO Sonic")
+	# plt.show()
+
 	# TODO: actually get this working (use callback to get loss/reward values, graph average across all envs)
 	# plt.plot(losses)
 	# plt.xlabel('Steps')
@@ -66,7 +75,8 @@ def main():
 	# plt.savefig('loss_vs_timesteps.png')
 	model.save("sonic")
 
-	env = make_env()
+	env = make_env(level=params["level"], skip=params["frame_skip"])
+	env = VecFrameStack(env, n_stack=8)
 	model = PPO.load("sonic", env=env)
 	vec_env = model.get_env()
 	obs = vec_env.reset()
