@@ -4,12 +4,15 @@ import cv2				# monitor wrapper
 import retro			# stable-retro
 import numpy as np
 import os
+import csv
 
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 from stable_baselines3.common.env_checker import check_env
+
+beat_times = []
 
 # Creates the environment
 def make_env(level, pass_num, skip=0, obs_dim=(96, 96)):
@@ -31,8 +34,16 @@ class Rewarder(gym.Wrapper):
 		self.reset_trackers()
 
 	def step(self, action):
+		obs, _, terminated, truncated, info = self.env.step(action)
+
+		if self.cur_act != info["act"]:
+			with open("./logs/levelbeats.csv", mode='a', newline='') as file:
+				writer = csv.writer(file)
+				writer.writerow([self.steps])
+
+		self.steps += 1
+
 		if self.pass_num == 1:
-			obs, _, terminated, truncated, info = self.env.step(action)
 			reward = max(0, (info['x'] - self.progress))
 			self.progress = max(info['x'], self.progress)
 			# if agent died, reset and punish
@@ -41,18 +52,17 @@ class Rewarder(gym.Wrapper):
 				return obs, -1, True, False, info
 			# if agent beats level, reset and reward
 			if self.cur_act != info["act"]:
+				self.steps = 0
 				return obs, 50, True, False, info
 			# TODO: multiply reward by delta x?
 			return obs, reward / 100, terminated, truncated, info
 		elif self.pass_num == 2:
-			self.steps += 1
-			obs, _, terminated, truncated, info = self.env.step(action)
 			reward = max(0, (info['x'] - self.progress))
 			self.progress = max(info['x'], self.progress)
 			# if agent died, reset and punish harder
 			if info["lives"] < 3:
 				self.reset_trackers()
-				return obs, -1, True, False, info
+				return obs, -2, True, False, info
 			# if agent beats level, reset and reward, but continue to reward progress
 			if self.cur_act != info["act"]:
 				"""
@@ -61,10 +71,10 @@ class Rewarder(gym.Wrapper):
 				now that we know that resetting trackers on level change AND death during initial training negatively effects ability to learn to win, perhaps optimization for speed can occur
 				after initial training, once the agent has at least learned to win
 				"""
-				time_bonus = max(0, 1000 - self.steps) / 100.0
+				time_bonus = max(0, 100 - self.steps / 1000)
 				self.reset_trackers()
-				return obs, 50 + time_bonus, True, False, info
-			return obs, reward / 100 if reward > 0 else -0.01, terminated, truncated, info
+				return obs, time_bonus, True, False, info
+			return obs, reward / 100 if reward > 0 else -0.02, terminated, truncated, info
 
 	def reset_trackers(self):
 		self.env.reset()
@@ -137,7 +147,6 @@ class ActionMapper(gym.ActionWrapper):
 class Callback(BaseCallback):
 	def __init__(self, n_steps, verbose=0):
 		super(Callback, self).__init__(verbose)
-		self.losses = []
 		self.n_steps = n_steps
 	# 	self.log_dir = "logs/"
 	# 	self.save_path = os.path.join("logs/", "best_model")
@@ -148,13 +157,13 @@ class Callback(BaseCallback):
 	# 	if self.save_path is not None:
 	# 		os.makedirs(self.save_path, exist_ok=True)
 
+	def format_float(self, num):
+		ns = ', '.join([f'+{n:.2f}' if n >= 0 else f'{n:.2f}' for n in num])
+		return ns
+	
 	def _on_step(self) -> bool:
-		if self.verbose > 0:
-			if 'rewards' in self.locals and np.any(self.locals['rewards'] > 0):
-				print(f"Reward on {self.num_timesteps}: {self.locals['rewards']}")
-			elif 'rewards' in self.locals and np.any(self.locals['rewards'] < 0):
-				print(f"Loss on {self.num_timesteps}: {self.locals['rewards']}")
-
+		if self.verbose > 0 and 'rewards' in self.locals:
+			print(f"Timestep {self.num_timesteps}:\t{self.format_float(self.locals['rewards'])}")
 		if self.n_steps > 0 and self.num_timesteps % self.n_steps == 0:
 			"""below line was commented out because resetting early was preventing thorough exploration of the loop problem"""
 			# self.model.env.reset()
@@ -163,21 +172,6 @@ class Callback(BaseCallback):
 				"""
 				TODO: save model for iterative comparisons between models
 				"""
-			# x, y = ts2xy(load_results(self.log_dir), "timesteps")
-			# if len(x) > 0:
-			# 	# Mean training reward over the last 100 episodes
-			# 	mean_reward = np.mean(y[-100:])
-			# 	if self.verbose >= 1:
-			# 		print(f"Best mean reward: {self.best_mean_reward:.2f} - Last mean reward per episode: {mean_reward:.2f}")
-
-			# 	# New best model, you could save the agent here
-			# 	if mean_reward > self.best_mean_reward:
-			# 		self.best_mean_reward = mean_reward
-			# 		# Example for saving best model
-			# 		if self.verbose >= 1:
-			# 			print(f"Saving new best model to {self.save_path}")
-			# 		self.model.save(self.save_path)
-			# self.losses.append(self.locals['loss'])
 		return True
 	
 # TODO: other implementations show that action space may need to increased for the more complex levels (after 1-2)
