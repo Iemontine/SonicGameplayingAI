@@ -1,8 +1,11 @@
 from helpers import Callback, make_env
 from ppo import PPO
+from stable_baselines3.common.vec_env import VecFrameStack, SubprocVecEnv
+from train import params
 
 def main():
-	env = make_env()
+	env = SubprocVecEnv([make_env(params["level"], skip=params["frame_skip"], obs_dim=params["observation_dimension"]) for _ in range(1)])
+	env = VecFrameStack(env, n_stack=params["frame_stack"])
 	model = PPO.load("sonic", env=env)
 	vec_env = model.get_env()
 	obs = vec_env.reset()
