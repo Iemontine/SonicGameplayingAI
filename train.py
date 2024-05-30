@@ -1,3 +1,5 @@
+from re import M
+from sympy import true
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,38 +12,35 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from ppo import PPO
 from helpers import Callback, make_env
 
+# Define the parameters for the PPO model
+params = {
+	# Currently arbitrarily chosen values
+	"gamma": 0.95,					# Discount factor
+	"tau": 0.985,					# Factor for trade-off of bias vs variance in GAE
+	"beta": 0.30,					# Entropy coefficient
+	"epsilon": 0.75,				# Clipped surrogate objective
+	"lr": 7.5e-4,					# Learning rate
+	"steps": 512,					# Steps before updating policy, 4096 gives good results after  40mins training
+	"batch_size": 8,				# Minibatch size
+	"epochs": 10,					# Number of epoch when optimizing the surrogate loss
+	# Development constants
+	"total_timesteps": 500000,
+	"policy": "CnnPolicy",
+	"num_envs": 5,
+	"frame_skip": 8,
+	"frame_stack": 8,
+	"observation_dimension": (96, 96),
+	"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+	"render": True,
+	"level": "1-1",
+	"pass_num": 2,
+}
+
 def main():
 	print(f"PyTorch Version: {torch.__version__}, CUDA Version: {torch.version.cuda}, CUDA Enabled: {torch.cuda.is_available()}")
-	# Define the parameters for the PPO model
-	params = {
-		# Currently arbitrarily chosen values
-		"gamma": 0.95,					# Discount factor
-		"tau": 0.985,					# Factor for trade-off of bias vs variance in GAE
-		"beta": 0.30,					# Entropy coefficient
-		"epsilon": 0.75,				# Clipped surrogate objective
-		"lr": 7.5e-4,					# Learning rate
-		"steps": 4096,					# Steps before updating policy
-		"batch_size": 8,				# Minibatch size
-		"epochs": 10,					# Number of epoch when optimizing the surrogate loss
-		# Development constants
-		"total_timesteps": 2000000,
-		"policy": "CnnPolicy",
-		"num_envs": 5,
-		"frame_skip": 8,
-		"frame_stack": 8,
-		"observation_dimension": (96, 96),
-		"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
-		"multiprocessing": True,
-		"render": True,
-		"level": "1-1"
-	}
-
 	# losses = []
 
-	if params["multiprocessing"]:
-		env = SubprocVecEnv([make_env(params["level"], skip=params["frame_skip"], obs_dim=params["observation_dimension"]) for _ in range(params["num_envs"])])
-	else:
-		env = make_env(params["level"], skip=params["frame_skip"], obs_dim=params["observation_dimension"])()
+	env = SubprocVecEnv([make_env(params["level"], skip=params["frame_skip"], obs_dim=params["observation_dimension"], pass_num=params["pass_num"]) for _ in range(params["num_envs"])])
 	env = VecFrameStack(env, n_stack=params["frame_stack"])
 
 	# Create model
@@ -60,33 +59,19 @@ def main():
 	)
 
 	# Train model
-	model = PPO(params["policy"], env, verbose=1)
-	model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
+	if params["pass_num"] == 1:
+		# Pass 1: Discover the solution to the level
+		model = PPO(params["policy"], env, verbose=1)
+		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
+		model.save("sonic")
+	elif params["pass_num"] == 2:
+		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
+		model = PPO.load("sonic.zip")
+		model.set_env(env)
+		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
+		model.save("sonic2")
 
-	# Plot results
-	# plot_results([load_results("logs/")], params["total_timesteps"], "PPO Sonic")
-	# plt.show()
-
-	# TODO: actually get this working (use callback to get loss/reward values, graph average across all envs)
-	# plt.plot(losses)
-	# plt.xlabel('Steps')
-	# plt.ylabel('Loss')
-	# plt.title('Loss vs Timesteps')
-	# plt.savefig('loss_vs_timesteps.png')
-	model.save("sonic")
-
-	env = make_env(level=params["level"], skip=params["frame_skip"])
-	env = VecFrameStack(env, n_stack=8)
-	model = PPO.load("sonic", env=env)
-	vec_env = model.get_env()
-	obs = vec_env.reset()
-	done = False
-
-	while not done:
-		action, states = model.predict(obs, deterministic=True)
-		obs, reward, done, info = vec_env.step(action)
-		vec_env.render()
-	env.close()
+	# TODO: graph loss with callback somehow
 
 if __name__ == "__main__":
 	main()
