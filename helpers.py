@@ -14,11 +14,11 @@ from stable_baselines3.common.env_checker import check_env
 
 beat_times = []
 
-# Creates the environment
+# Create the environment
 def make_env(level, pass_num, skip=0, obs_dim=(96, 96)):
+	# Wrap the environment, return the function itself to allow multiprocessing
 	def _init():
 		env = retro.make('SonicTheHedgehog-Genesis', state=STATES[level])
-		# Wrappers
 		env = Rewarder(env, pass_num=pass_num)
 		env = Observer(env, dim=obs_dim)
 		env = FrameSkipper(env, skip=skip)
@@ -30,51 +30,37 @@ class Rewarder(gym.Wrapper):
 	def __init__(self, env, pass_num):
 		super(Rewarder, self).__init__(env)
 		self.pass_num = pass_num
-		self.steps = 0
+		self.steps_to_win = 0
 		self.reset_trackers()
 
 	def step(self, action):
 		obs, _, terminated, truncated, info = self.env.step(action)
 
-		if self.cur_act != info["act"]:
-			with open("./logs/levelbeats.csv", mode='a', newline='') as file:
-				writer = csv.writer(file)
-				writer.writerow([self.steps])
-
-		self.steps += 1
-
-		if self.pass_num == 1:
-			reward = max(0, (info['x'] - self.progress))
-			self.progress = max(info['x'], self.progress)
-			# if agent died, reset and punish
-			if info["lives"] < 3:
-				self.reset_trackers()
-				return obs, -1, True, False, info
-			# if agent beats level, reset and reward
-			if self.cur_act != info["act"]:
-				self.steps = 0
-				return obs, 50, True, False, info
-			# TODO: multiply reward by delta x?
-			return obs, reward / 100, terminated, truncated, info
-		elif self.pass_num == 2:
-			reward = max(0, (info['x'] - self.progress))
-			self.progress = max(info['x'], self.progress)
-			# if agent died, reset and punish harder
-			if info["lives"] < 3:
-				self.reset_trackers()
-				return obs, -2, True, False, info
-			# if agent beats level, reset and reward, but continue to reward progress
-			if self.cur_act != info["act"]:
-				"""
-				investigating what happens when progress is reset when level changes
-				could result in learning to go FASTER once the solution to a level is found
-				now that we know that resetting trackers on level change AND death during initial training negatively effects ability to learn to win, perhaps optimization for speed can occur
-				after initial training, once the agent has at least learned to win
-				"""
-				time_bonus = max(0, 100 - self.steps / 1000)
+		if info["lives"] < 3:						# If agent died
+			self.reset_trackers()					# Reset the trackers
+			if self.pass_num == 1:					# Pass 1,
+				return obs, -1, True, False, info	# Reset and punish
+			elif self.pass_num == 2:				# Pass 2,
+				return obs, -2, True, False, info	# Reset and punish harder
+		if self.cur_act != info["act"]:				# If Level change (beat level)
+			self.log_win()							# Log the win
+			self.steps_to_win = 0					# Reset the win trackers
+			if self.pass_num == 1:					# Pass 1,
+				return obs, 50, True, False, info	# Reward simply for beating the level
+			elif self.pass_num == 2:				# Pass 2,
+				"""Note: resetting on terminate/truncate can potentially cause negative effects on learning, as the agent may learn to reset early to avoid punishment"""
+				# Reward for quick completion, may result in learning to go faster now that the solution to level has been discovered
+				time_bonus = max(0, 100 - self.steps / 1000)		
 				self.reset_trackers()
 				return obs, time_bonus, True, False, info
-			return obs, reward / 100 if reward > 0 else -0.02, terminated, truncated, info
+
+		self.steps_to_win += 1
+		reward = max(0, (info['x'] - self.progress))
+		self.progress = max(info['x'], self.progress)
+		if self.pass_num == 1:		# if agent beats level, reset and reward
+			return obs, reward / 100, terminated, truncated, info
+		elif self.pass_num == 2:	# if agent beats level, reset and reward, but continue to reward progress
+			return obs, reward / 100 if reward > 0 else -0.01, terminated, truncated, info
 
 	def reset_trackers(self):
 		self.env.reset()
@@ -84,22 +70,18 @@ class Rewarder(gym.Wrapper):
 		self.progress = self.start_pos
 		self.steps = 0
 		self.env.reset()
-	"""
-	TODO: commented below code to investigate issues with resetting environment after epoch update (local minima being preferred, sonics stopped trying to move, although this could also be the result of a relatively high punishment (-10) for dying in combination with a relatively low reward (reward/1000) for moving forward), see below "commented out because resetting early was preventing thorough exploration of the loop problem"
-	"""
+
+	def log_win(self):
+		with open("./logs/levelbeats.csv", mode='a', newline='') as file:
+			writer = csv.writer(file)
+			writer.writerow([self.steps_to_win])
+
+	"""TODO: commented below code to investigate issues with resetting environment after epoch update (local minima being preferred, sonics stopped trying to move, although this could also be the result of a relatively high punishment (-10) for dying in combination with a relatively low reward (reward/1000) for moving forward), see below "commented out because resetting early was preventing thorough exploration of the loop problem"""
 	# called when terminated/truncated
 	# def reset(self, **kwargs):
-	# 	self.env.reset()
-	# 	_, _, _, _, info = self.env.step(self.env.action_space.sample())
-	# 	self.start_pos = info["x"]
-	# 	self.cur_act = info["act"]
-	# 	self.progress = self.start_pos
+	# 	self.reset_trackers()
 	# 	return self.env.reset(**kwargs)
-	"""
-	more notes:
-	it appears that resetting the trackers on both death and level change is bad. by around ~750,000 timesteps with death resets but NO victory resets, the agent learns to beat the level semi-consistently.
-	hypotheses?
-	"""
+	"""it appears that resetting the trackers on both death and level change is bad. by around ~750,000 timesteps with death resets but NO victory resets, the agent learns to beat the level semi-consistently. hypotheses?"""
 
 class Observer(gym.ObservationWrapper):
 	def __init__(self, env, dim=(96, 96)):
@@ -112,7 +94,6 @@ class Observer(gym.ObservationWrapper):
 		gray = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
 		resized = cv2.resize(gray, (self.dimX, self.dimY), interpolation=cv2.INTER_AREA)
 		return resized[:, :, None]
-		# return np.expand_dims(resized, axis=-1)
 
 class FrameSkipper(gym.Wrapper):
 	def __init__(self, env, skip=4):
@@ -148,14 +129,6 @@ class Callback(BaseCallback):
 	def __init__(self, n_steps, verbose=0):
 		super(Callback, self).__init__(verbose)
 		self.n_steps = n_steps
-	# 	self.log_dir = "logs/"
-	# 	self.save_path = os.path.join("logs/", "best_model")
-	# 	self.best_mean_reward = -np.inf
-
-	# def _init_callback(self) -> None:
-	# 	# Create folder if needed
-	# 	if self.save_path is not None:
-	# 		os.makedirs(self.save_path, exist_ok=True)
 
 	def format_float(self, num):
 		ns = ', '.join([f'+{n:.2f}' if n >= 0 else f'{n:.2f}' for n in num])
@@ -165,15 +138,28 @@ class Callback(BaseCallback):
 		if self.verbose > 0 and 'rewards' in self.locals:
 			print(f"Timestep {self.num_timesteps}:\t{self.format_float(self.locals['rewards'])}")
 		if self.n_steps > 0 and self.num_timesteps % self.n_steps == 0:
-			"""below line was commented out because resetting early was preventing thorough exploration of the loop problem"""
-			# self.model.env.reset()
+			# self.model.env.reset()	# potentially prevents thorough exploration of the loop problem
 			if self.verbose > 0:
 				print(f"Policy updated on {self.num_timesteps}, saving model...")
 				"""
 				TODO: save model for iterative comparisons between models
 				"""
+		self.update_timesteps_in_csv()
 		return True
 	
+	def update_timesteps_in_csv(self):
+		if not os.path.exists("./logs/levelbeats.csv"):
+			return
+		with open("./logs/levelbeats.csv", 'r') as file:
+			lines = file.readlines()
+		if not lines:
+			return
+		last_line = [item for item in lines[-1].strip().split(',') if item != '']
+		if len(last_line) == 1:
+			lines[-1] = f"{last_line[0]},{self.num_timesteps}\n"
+		with open("./logs/levelbeats.csv", 'w', newline='') as file:
+			file.writelines(lines)
+
 # TODO: other implementations show that action space may need to increased for the more complex levels (after 1-2)
 ACTION_MAPPING = {
 	0: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],	# Left
