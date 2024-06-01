@@ -33,7 +33,7 @@ params = {
 	"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 	"render": True,
 	"level": "1-1",
-	"pass_num": 2,
+	"pass_num": 1,
 }
 
 def main():
