@@ -20,7 +20,7 @@ params = {
 	"beta": 0.30,					# Entropy coefficient
 	"epsilon": 0.75,				# Clipped surrogate objective
 	"lr": 7.5e-4,					# Learning rate
-	"steps": 512,					# Steps before updating policy, 4096 gives good results after  40mins training
+	"steps": 512,					# Steps before updating policy, 4096 gives good results after 40mins training
 	"batch_size": 8,				# Minibatch size
 	"epochs": 10,					# Number of epoch when optimizing the surrogate loss
 	# Development constants
@@ -33,7 +33,7 @@ params = {
 	"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 	"render": True,
 	"level": "1-1",
-	"pass_num": 1,
+	"pass_num": 3,
 }
 
 def main():
@@ -70,6 +70,12 @@ def main():
 		model.set_env(env)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic2")
+	elif params["pass_num"] == 3:
+		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
+		model = PPO.load("sonic2.zip")
+		model.set_env(env)
+		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
+		model.save("sonic3")
 
 	# TODO: graph loss with callback somehow
 

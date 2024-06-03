@@ -11,3 +11,8 @@ optuna==3.6.1
 torch==2.3.0+cu121
 torchaudio==2.3.0+cu121
 torchvision==0.18.0+cu121
+
+# run sudo apt-get install texlive-pictures texlive-science texlive-latex-extra latexmk
+pylatex==1.4.2
+# if you get stuck on "Pregenerating ConTeXt MarkIV format. This may take some time..."
+# hold down the enter key until it finishes don't ask me why that works
