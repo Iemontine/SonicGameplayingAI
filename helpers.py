@@ -37,7 +37,7 @@ class Rewarder(gym.Wrapper):
 		obs, _, terminated, truncated, info = self.env.step(action)
 
 		if info["lives"] < 3:						# If agent died
-			# TODO: track deaths to calculate winrate
+			"""TODO: track deaths to calculate winrate"""
 			self.reset_trackers()					# Reset the trackers
 			if self.pass_num == 1:					# Pass 1,
 				return obs, -1, True, False, info	# Reset and punish
@@ -49,7 +49,6 @@ class Rewarder(gym.Wrapper):
 			if self.pass_num == 1:					# Pass 1,
 				return obs, 50, True, False, info	# Reward simply for beating the level
 			elif self.pass_num > 2:				# Pass 2,
-				"""Note: resetting on terminate/truncate can potentially cause negative effects on learning, as the agent may learn to reset early to avoid punishment"""
 				# Reward for quick completion, may result in learning to go faster now that the solution to level has been discovered
 				time_bonus = max(0, 100 - self.steps / 1000)		
 				self.reset_trackers()
