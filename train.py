@@ -4,7 +4,6 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
-# TODO: get rid of these eventually?
 from stable_baselines3.common.vec_env import SubprocVecEnv, VecFrameStack, VecNormalize
 from stable_baselines3.common.results_plotter import load_results, ts2xy, plot_results
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -76,8 +75,6 @@ def main():
 		model.set_env(env)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic3")
-
-	# TODO: graph loss with callback somehow
 
 if __name__ == "__main__":
 	main()
