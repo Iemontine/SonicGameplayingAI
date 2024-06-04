@@ -1,5 +1,4 @@
 from re import M
-from sympy import true
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,7 +31,7 @@ params = {
 	"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 	"render": True,
 	"level": "1-1",
-	"pass_num": 1,
+	"pass_num": 2,
 }
 
 def main():
@@ -63,18 +62,20 @@ def main():
 		model = PPO(params["policy"], env, verbose=1)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic")
+		# Add an empty newline to levelbeats.csv
+		with open('levelbeats.csv', 'a') as file: file.write('\n')
 	elif params["pass_num"] == 2:
 		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
-		model = PPO.load("sonic.zip")
-		model.set_env(env)
+		model = PPO.load("sonic", env, verbose=1)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic2")
+		with open('levelbeats.csv', 'a') as file: file.write('\n')
 	elif params["pass_num"] == 3:
 		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
-		model = PPO.load("sonic2.zip")
-		model.set_env(env)
+		model = PPO.load("sonic2", env, verbose=1)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic3")
+		with open('levelbeats.csv', 'a') as file: file.write('\n')
 
 if __name__ == "__main__":
 	main()

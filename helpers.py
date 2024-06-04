@@ -37,13 +37,18 @@ class Rewarder(gym.Wrapper):
 		obs, _, terminated, truncated, info = self.env.step(action)
 
 		if info["lives"] < 3:						# If agent died
-			"""TODO: track deaths to calculate winrate"""
+			with open("./logs/winloss.csv", mode='a', newline='') as file:
+				writer = csv.writer(file)
+				writer.writerow(["loss", self.pass_num])
 			self.reset_trackers()					# Reset the trackers
 			if self.pass_num == 1:					# Pass 1,
 				return obs, -1, True, False, info	# Reset and punish
-			elif self.pass_num > 2:				# Pass 2,
+			elif self.pass_num >= 2:				# Pass 2,
 				return obs, -2, True, False, info	# Reset and punish harder
 		if self.cur_act != info["act"]:				# If Level change (beat level)
+			with open("./logs/winloss.csv", mode='a', newline='') as file:
+				writer = csv.writer(file)
+				writer.writerow(["win", self.pass_num])
 			self.log_win()							# Log the win
 			self.steps_to_win = 0					# Reset the win trackers
 			if self.pass_num == 1:					# Pass 1,
@@ -59,7 +64,7 @@ class Rewarder(gym.Wrapper):
 		self.progress = max(info['x'], self.progress)
 		if self.pass_num == 1:		# if agent beats level, reset and reward
 			return obs, reward / 100, terminated, truncated, info
-		elif self.pass_num > 2:	# if agent beats level, reset and reward, but continue to reward progress
+		elif self.pass_num >= 2:	# if agent beats level, reset and reward, but continue to reward progress
 			return obs, reward / 100 if reward > 0 else -0.01, terminated, truncated, info
 
 	def reset_trackers(self):
