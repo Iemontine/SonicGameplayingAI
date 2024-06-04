@@ -66,13 +66,15 @@ def main():
 		with open('levelbeats.csv', 'a') as file: file.write('\n')
 	elif params["pass_num"] == 2:
 		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
-		model = PPO.load("sonic", env, verbose=1)
+		model = PPO.load("sonic", verbose=1)
+		model.set_env(env)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic2")
 		with open('levelbeats.csv', 'a') as file: file.write('\n')
 	elif params["pass_num"] == 3:
 		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
-		model = PPO.load("sonic2", env, verbose=1)
+		model = PPO.load("sonic2", verbose=1)
+		model.set_env(env)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic3")
 		with open('levelbeats.csv', 'a') as file: file.write('\n')

@@ -53,7 +53,7 @@ class Rewarder(gym.Wrapper):
 			self.steps_to_win = 0					# Reset the win trackers
 			if self.pass_num == 1:					# Pass 1,
 				return obs, 50, True, False, info	# Reward simply for beating the level
-			elif self.pass_num > 2:				# Pass 2,
+			elif self.pass_num >= 2:				# Pass 2,
 				# Reward for quick completion, may result in learning to go faster now that the solution to level has been discovered
 				time_bonus = max(0, 100 - self.steps / 1000)		
 				self.reset_trackers()
