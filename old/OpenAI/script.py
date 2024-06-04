@@ -9,7 +9,7 @@ def main():
     env = DummyVecEnv([lambda: env])  # Vectorize environment for performance
 
     # Initialize model with GPU enhancements where applicable
-    # TODO: for some reason, training on OpenAI's PPO2 algorithm isn't working (the agent isn't doing very well)
+    # tood: for some reason, training on OpenAI's PPO2 algorithm isn't working (the agent isn't doing very well)
     #       unsure if this is a problem with how long the training is occuring or if it's a bad omen lolololol
     model = PPO2(CnnPolicy, env, verbose=1, tensorboard_log="./ppo2_airstriker_tensorboard/")
 

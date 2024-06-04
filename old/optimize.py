@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import optuna
 
-# TODO: get rid of these eventually
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.evaluation import evaluate_policy
 

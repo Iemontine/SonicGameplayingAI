@@ -3,3 +3,10 @@ ROM
 *pycache*
 *.zip
 logs/
+*.pdf
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.tex
+*.bbl

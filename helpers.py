@@ -37,18 +37,18 @@ class Rewarder(gym.Wrapper):
 		obs, _, terminated, truncated, info = self.env.step(action)
 
 		if info["lives"] < 3:						# If agent died
+			"""TODO: track deaths to calculate winrate"""
 			self.reset_trackers()					# Reset the trackers
 			if self.pass_num == 1:					# Pass 1,
 				return obs, -1, True, False, info	# Reset and punish
-			elif self.pass_num == 2:				# Pass 2,
+			elif self.pass_num > 2:				# Pass 2,
 				return obs, -2, True, False, info	# Reset and punish harder
 		if self.cur_act != info["act"]:				# If Level change (beat level)
 			self.log_win()							# Log the win
 			self.steps_to_win = 0					# Reset the win trackers
 			if self.pass_num == 1:					# Pass 1,
 				return obs, 50, True, False, info	# Reward simply for beating the level
-			elif self.pass_num == 2:				# Pass 2,
-				"""Note: resetting on terminate/truncate can potentially cause negative effects on learning, as the agent may learn to reset early to avoid punishment"""
+			elif self.pass_num > 2:				# Pass 2,
 				# Reward for quick completion, may result in learning to go faster now that the solution to level has been discovered
 				time_bonus = max(0, 100 - self.steps / 1000)		
 				self.reset_trackers()
@@ -59,7 +59,7 @@ class Rewarder(gym.Wrapper):
 		self.progress = max(info['x'], self.progress)
 		if self.pass_num == 1:		# if agent beats level, reset and reward
 			return obs, reward / 100, terminated, truncated, info
-		elif self.pass_num == 2:	# if agent beats level, reset and reward, but continue to reward progress
+		elif self.pass_num > 2:	# if agent beats level, reset and reward, but continue to reward progress
 			return obs, reward / 100 if reward > 0 else -0.01, terminated, truncated, info
 
 	def reset_trackers(self):
@@ -76,12 +76,11 @@ class Rewarder(gym.Wrapper):
 			writer = csv.writer(file)
 			writer.writerow([self.steps_to_win])
 
-	"""TODO: commented below code to investigate issues with resetting environment after epoch update (local minima being preferred, sonics stopped trying to move, although this could also be the result of a relatively high punishment (-10) for dying in combination with a relatively low reward (reward/1000) for moving forward), see below "commented out because resetting early was preventing thorough exploration of the loop problem"""
+	"""commented below code to investigate issues with resetting environment after epoch update (local minima being preferred, sonics stopped trying to move, although this could also be the result of a relatively high punishment (-10) for dying in combination with a relatively low reward (reward/1000) for moving forward), see below "commented out because resetting early was preventing thorough exploration of the loop problem. this was discovered by observing that resetting trackers on death AND level change was bad. with death resets ALONE, the agent learns to beat the level semi-consistently by around ~750,000 timesteps. hypotheses?"""
 	# called when terminated/truncated
 	# def reset(self, **kwargs):
 	# 	self.reset_trackers()
 	# 	return self.env.reset(**kwargs)
-	"""it appears that resetting the trackers on both death and level change is bad. by around ~750,000 timesteps with death resets but NO victory resets, the agent learns to beat the level semi-consistently. hypotheses?"""
 
 class Observer(gym.ObservationWrapper):
 	def __init__(self, env, dim=(96, 96)):
@@ -138,16 +137,19 @@ class Callback(BaseCallback):
 		if self.verbose > 0 and 'rewards' in self.locals:
 			print(f"Timestep {self.num_timesteps}:\t{self.format_float(self.locals['rewards'])}")
 		if self.n_steps > 0 and self.num_timesteps % self.n_steps == 0:
-			# self.model.env.reset()	# potentially prevents thorough exploration of the loop problem
+			"""commented out, resetting on model update potentially prevents thorough exploration of the loop problem"""
+			# self.model.env.reset()	
 			if self.verbose > 0:
 				print(f"Policy updated on {self.num_timesteps}, saving model...")
-				"""
-				TODO: save model for iterative comparisons between models
-				"""
+				"""TODO: periodically save model for iterative comparisons between models, or save best model?"""
 		self.update_timesteps_in_csv()
 		return True
 	
 	def update_timesteps_in_csv(self):
+		"""TODO: reimplement to perhaps instead use system time to determine level completion time
+				this would require that the second-rate be consistent, investigate whether or not this is true
+		"""
+		# Time-to-beat unfortunately includes time spent waiting for the stage-complete screen to complete, which is hopefully negligible
 		if not os.path.exists("./logs/levelbeats.csv"):
 			return
 		with open("./logs/levelbeats.csv", 'r') as file:
@@ -160,7 +162,7 @@ class Callback(BaseCallback):
 		with open("./logs/levelbeats.csv", 'w', newline='') as file:
 			file.writelines(lines)
 
-# TODO: other implementations show that action space may need to increased for the more complex levels (after 1-2)
+"""TODO: for the generalization problem, other implementations show that action space may need to increased for the more complex levels (after 1-2)"""
 ACTION_MAPPING = {
 	0: [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],	# Left
 	1: [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],	# Right
