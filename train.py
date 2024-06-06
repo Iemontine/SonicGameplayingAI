@@ -22,7 +22,7 @@ params = {
 	"batch_size": 8,				# Minibatch size
 	"epochs": 10,					# Number of epoch when optimizing the surrogate loss
 	# Development constants
-	"total_timesteps": 500000,
+	"total_timesteps": 1500000,
 	"policy": "CnnPolicy",
 	"num_envs": 5,
 	"frame_skip": 8,
@@ -31,7 +31,7 @@ params = {
 	"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 	"render": True,
 	"level": "1-1",
-	"pass_num": 3,
+	"pass_num": 1,
 }
 
 def main():
