@@ -31,7 +31,7 @@ params = {
 	"device": torch.device("cuda" if torch.cuda.is_available() else "cpu"),
 	"render": True,
 	"level": "1-1",
-	"pass_num": 1,
+	"pass_num": 3,
 }
 
 def main():
@@ -59,22 +59,21 @@ def main():
 	# Train model
 	if params["pass_num"] == 1:
 		# Pass 1: Discover the solution to the level
-		model = PPO(params["policy"], env, verbose=1)
+		model = PPO(params["policy"], env=env, verbose=1)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic1")
 		# Add an empty newline to levelbeats.csv
 		with open('./logs/levelbeats.csv', 'a') as file: file.write('\n')
 	elif params["pass_num"] == 2:
 		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
-		model = PPO.load("sonic1", verbose=1)
-		model.set_env(env)
+		model = PPO.load("sonic1", env=env, verbose=1)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic2")
 		with open('./logs/levelbeats.csv', 'a') as file: file.write('\n')
 	elif params["pass_num"] == 3:
 		# Pass 2: Refine the solution to the level, reward function tweaked to punish lack of progress, and reward speed
-		model = PPO.load("sonic2", verbose=1)
-		model.set_env(env)
+		# model = PPO.load("sonic2", env=env, verbose=1)
+		model = PPO(params["policy"], env=env, verbose=1)
 		model.learn(total_timesteps=params["total_timesteps"], progress_bar=True, callback=Callback(n_steps=params["steps"], verbose=1))
 		model.save("sonic3")
 
