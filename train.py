@@ -14,11 +14,11 @@ from helpers import Callback, make_env
 # Define the parameters for the PPO model
 params = {
 	# Currently arbitrarily chosen values
-	"gamma": 0.9,					# Discount factor
+	"gamma": 0.925,					# Discount factor
 	"tau": 0.985,					# Factor for trade-off of bias vs variance in GAE
-	"beta": 0.25,					# Entropy coefficient
+	"beta": 0.275,					# Entropy coefficient
 	"epsilon": 0.75,				# Clipped surrogate objective
-	"lr": 9e-4,					# Learning rate
+	"lr": 8e-4,					# Learning rate
 	"steps": 512,					# Steps before updating policy, 4096 gives good results after 40mins training
 	"batch_size": 8,				# Minibatch size
 	"epochs": 10,					# Number of epoch when optimizing the surrogate loss
