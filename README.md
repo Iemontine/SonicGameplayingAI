@@ -54,6 +54,11 @@ As long as you give an agent enough data to learn from, and enough time to learn
 * #### Install requirements via requirements.txt
     * ```pip install -r requirements.txt```
     * NOTE: You may need to manually install some libraries that cause errors during installation.
+* #### CUDA 12.1
+    * To install CUDA versions of pytorch, ensure you have CUDA 12.1 on your machine. You may have to manually install torch, torchaudio, and torchvision if you do not have an NVIDIA GPU or do not external processing services like Google Colab.
+    * Certain CSIF computers at UC Davis have NVIDIA GPUs, so connecting to them is an alternate option
+* #### PyLaTeX Hint
+    * When installing pylatex, if you get stuck on "Pregenerating ConTeXt MarkIV format. This may take some time...", hold down the Enter key in the console until it finishes. Don't ask me why this works.
 * #### Additional requirements
     ```bash
     pip install gymnasium[accept-rom-license]
