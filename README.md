@@ -1,5 +1,11 @@
 # PPO Research Reimplementation
 
+Both algorithm and hyperparameter training were applied to the popular video game "Sonic the Hedgehog" for the Sega Genesis.
+
+https://github.com/user-attachments/assets/d9e2249f-0b56-4fc8-952f-35cefdf7f1c8
+
+Keep in mind training was performed over the course of 1-2 hours and that the world record speed of completing this level is ~25 seconds, so we are very happy with these results.
+
 ## Main Takeaways
 
 I have found that the focus of early model training should not be on hard-coding training progression or fine-tuning, as either can only go so far due to human limitations of understanding how a policy is formed and applied to a neural network, which is abstracted nearly if not completely beyond human comprehension. The focus should be on hyperparameter tuning and providing as much informative data as possible to the training agent.
