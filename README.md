@@ -1,8 +1,14 @@
 # PPO Research Reimplementation
 
+## Main Takeaways
+
+I have found that the focus of early model training should not be on hard-coding training progression or fine-tuning, as either can only go so far due to human limitations of understanding how a policy is formed and applied to a neural network, which is abstracted nearly if not completely beyond human comprehension. The focus should be on hyperparameter tuning and providing as much informative data as possible to the training agent.
+
+As long as you give an agent enough data to learn from, and enough time to learn from it, then pretty much anything can be learned.
+
+## Development Environment Setup
 ## Clone project
 * ```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
-
 <details>
 <summary><h2>Installing Python 3.10.9</h2></summary>
 
