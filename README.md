@@ -14,7 +14,9 @@ As long as you give an agent enough data to learn from, and enough time to learn
 
 ## Development Environment Setup
 ## Clone project
-* ```git clone https://github.com/Iemontine/ProximalPolicyOptimization.git```
+```bash
+git clone https://github.com/Iemontine/ProximalPolicyOptimization.git
+```
 <details>
 <summary><h2>Installing Python 3.10.9</h2></summary>
 
