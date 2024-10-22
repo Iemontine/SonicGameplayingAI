@@ -8,6 +8,8 @@ Keep in mind training was performed over the course of 1-2 hours and that the wo
 
 ## Main Takeaways
 
+One takeaway is that due to the relatability and intuitiveness of the performance of AI agents in a simulated environment or lack thereof, it is very easy to sort of visually and intuitively tune hyperparameters, as well as diagnose or identify issues within the developing policy. An example of this in this project deals with the circular loop the player/agent has to traverse through midway through the level. Due to the fact that the reward function is based on rightward **progress** through the level, agents that began "exploiting" too early would get stuck at the loop. This prompted discover that lowering learning rate, thereby increasing the amount of time spent exploring the environment, allowed agents to explore more about the "loop problem" and eventually get past it.
+
 I have found that the focus of early model training should not be on hard-coding training progression or fine-tuning, as either can only go so far due to human limitations of understanding how a policy is formed and applied to a neural network, which is abstracted nearly if not completely beyond human comprehension. The focus should be on hyperparameter tuning and providing as much informative data as possible to the training agent.
 
 As long as you give an agent enough data to learn from, and enough time to learn from it, then pretty much anything can be learned.
