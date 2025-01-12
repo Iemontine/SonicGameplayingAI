@@ -4,9 +4,9 @@ Both algorithm and hyperparameter training were applied to the popular video gam
 
 https://github.com/user-attachments/assets/d9e2249f-0b56-4fc8-952f-35cefdf7f1c8
 
-Keep in mind training was performed over the course of 1-2 hours and that the world record speed of completing this level is ~25 seconds, so we are very happy with these results.
+**Keep in mind training was performed over the course of 1-2 hours and that the world record speed of completing this level is ~25 seconds, so we are very happy with these results.**
 
-Formal research artifact can be found here: [Gameplaying AI Implementing Proximal Policy Optimization.pdf](https://github.com/user-attachments/files/18388443/Gameplaying.AI.Implementing.Proximal.Policy.Optimization.pdf)
+### Formal research artifact can be found here: [Gameplaying AI Implementing Proximal Policy Optimization.pdf](https://github.com/user-attachments/files/18388443/Gameplaying.AI.Implementing.Proximal.Policy.Optimization.pdf)
 ![Progress rewarding problem](https://github.com/user-attachments/assets/0a593bce-5c4a-49d6-9462-b98872d67ba2)
 
 ## Main Takeaways
